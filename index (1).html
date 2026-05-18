@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vaibhav Sahu · Performance Marketing</title>
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230a0a0a'/><circle cx='22' cy='10' r='3' fill='%23ff5b2e'/><text x='16' y='22' text-anchor='middle' font-family='Helvetica' font-size='14' font-weight='700' fill='%23e8e6dd' letter-spacing='-0.5'>VS</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --fg: #e8e6dd;
+    --accent: #ff5b2e;
+    --dim: #2a2622;
+    --muted: color-mix(in oklch, var(--fg) 55%, transparent);
+    --hairline: color-mix(in oklch, var(--fg) 14%, transparent);
+    --card: color-mix(in oklch, var(--fg) 4%, transparent);
+
+    --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --serif: "Instrument Serif", "Times New Roman", serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --maxw: 1280px;
+    --pad-x: clamp(20px, 4vw, 64px);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background 0.5s ease, color 0.5s ease;
+  }
+  body { overflow-x: hidden; }
+  html { scroll-behavior: smooth; }
+
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ─── Canvas — fixed full-viewport, behind everything ─────────────────── */
+  #webgl {
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+    display: block;
+    pointer-events: auto;
+  }
+
+  /* ─── Top nav ─────────────────────────────────────────────────────────── */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px var(--pad-x);
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+  .nav > * { pointer-events: auto; }
+
+  .nav .mark {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: #fff;
+    font-weight: 500;
+  }
+  .nav .mark::before {
+    content: "";
+    display: inline-block;
+    width: 9px; height: 9px;
+    background: var(--accent);
+    border-radius: 999px;
+    margin-right: 10px;
+    vertical-align: 1px;
+    box-shadow: 0 0 18px var(--accent);
+  }
+  .nav .mark .slash { color: rgba(255,255,255,0.45); font-weight: 400; margin: 0 4px; }
+
+  .nav-links {
+    display: flex; gap: clamp(14px, 2.4vw, 28px);
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: #fff;
+    align-items: center;
+    font-family: var(--mono);
+  }
+  .nav-links a {
+    opacity: 0.85;
+    transition: opacity .2s;
+  }
+  .nav-links a:hover { opacity: 1; }
+  .nav-links .cta {
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 11.5px;
+  }
+  @media (max-width: 720px) {
+    .nav-links a:not(.cta) { display: none; }
+  }
+
+  /* ─── Hero ─────────────────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    z-index: 2;
+    display: flex; flex-direction: column;
+    padding: 0 var(--pad-x) 48px;
+    pointer-events: none; /* let mouse hit the canvas */
+  }
+  .hero > * { pointer-events: auto; }
+
+  .hero-tag {
+    margin-top: 110px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-tag::before {
+    content: "";
+    width: 28px; height: 1px;
+    background: var(--accent);
+  }
+  .hero-tag .pulse {
+    width: 7px; height: 7px;
+    border-radius: 999px;
+    background: var(--accent);
+    margin-left: 6px;
+    box-shadow: 0 0 0 0 var(--accent);
+    animation: pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 60%, transparent); }
+    70%  { box-shadow: 0 0 0 12px color-mix(in oklch, var(--accent) 0%, transparent); }
+    100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 0%, transparent); }
+  }
+
+  .hero-top {
+    flex: 1;
+    display: flex; align-items: center;
+    padding-top: 28px;
+  }
+
+  .hero h1 {
+    margin: 0;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: clamp(64px, 13vw, 200px);
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+    pointer-events: none;
+  }
+  .hero h1 .ital {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .hero h1 .thin {
+    display: block;
+    font-weight: 200;
+    color: var(--muted);
+  }
+
+  .hero-bottom {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 48px;
+    align-items: end;
+    padding-bottom: 28px;
+  }
+  @media (max-width: 820px) {
+    .hero-bottom { grid-template-columns: 1fr; gap: 32px; }
+  }
+
+  .hero-body {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(20px, 2vw, 28px);
+    line-height: 1.25;
+    max-width: 38ch;
+    color: var(--fg);
+    text-wrap: pretty;
+  }
+  .hero-body .accent { color: var(--accent); }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+  }
+  .hero-stats .stat-val {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: clamp(26px, 3vw, 38px);
+    letter-spacing: -0.03em;
+    color: var(--fg);
+    line-height: 1;
+  }
+  .hero-stats .stat-val .unit {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .hero-stats .stat-key {
+    margin-top: 8px;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .hero-scroll {
+    position: absolute;
+    right: var(--pad-x);
+    bottom: 18px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 10px;
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%,100% { transform: translateY(0); opacity: 0.6; }
+    50%     { transform: translateY(4px); opacity: 1; }
+  }
+
+  /* ─── Sections shell ──────────────────────────────────────────────────── */
+  section.page {
+    position: relative;
+    z-index: 3;
+    background: var(--bg);
+    border-top: 1px solid var(--hairline);
+    padding: clamp(80px, 12vh, 140px) var(--pad-x);
+  }
+  .container { max-width: var(--maxw); margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 32px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 28px; height: 1px;
+    background: var(--accent);
+  }
+
+  h2.section-title {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: clamp(36px, 5.4vw, 72px);
+    line-height: 1.0;
+    letter-spacing: -0.035em;
+    margin: 0 0 56px;
+    max-width: 18ch;
+    text-wrap: balance;
+  }
+  h2.section-title .ital {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  /* ─── About ────────────────────────────────────────────────────────────── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: clamp(40px, 6vw, 96px);
+    align-items: start;
+  }
+  @media (max-width: 820px) { .about-grid { grid-template-columns: 1fr; } }
+
+  .about-side {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .about-side .row {
+    display: flex; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .about-side .row span:first-child {
+    width: 92px; opacity: 0.55;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10.5px;
+  }
+  .about-side .row span:last-child { color: var(--fg); flex: 1; }
+
+  .about-body p {
+    font-size: clamp(20px, 2vw, 26px);
+    line-height: 1.45;
+    margin: 0 0 24px;
+    text-wrap: pretty;
+  }
+  .about-body p.lead {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(28px, 3.4vw, 44px);
+    line-height: 1.2;
+    color: var(--fg);
+    max-width: 22ch;
+    margin-bottom: 36px;
+  }
+  .about-body p:not(.lead) { color: var(--muted); max-width: 50ch; font-size: clamp(16px, 1.3vw, 18px); }
+
+  /* ─── Work cards ──────────────────────────────────────────────────────── */
+  .work-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .work-cards .work-card:last-child { grid-column: 1 / -1; }
+  @media (max-width: 820px) {
+    .work-cards { grid-template-columns: 1fr; }
+    .work-cards .work-card:last-child { grid-column: auto; }
+  }
+
+  .work-card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex; flex-direction: column;
+    gap: 18px;
+    overflow: hidden;
+    transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .3s;
+  }
+  .work-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklch, var(--accent) 35%, var(--hairline));
+  }
+  .work-card::before {
+    content: "";
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle at center, color-mix(in oklch, var(--accent) 14%, transparent), transparent 60%);
+    pointer-events: none;
+  }
+
+  .wc-head {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  }
+  .wc-current {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .wc-current.now { color: var(--accent); }
+  .wc-current.now::before {
+    content: "● "; font-size: 8px; vertical-align: 2px;
+  }
+
+  .wc-date {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border: 1px solid var(--hairline);
+    padding: 5px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .work-card h3 {
+    margin: 0;
+    font-size: clamp(24px, 2.4vw, 32px);
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    line-height: 1.08;
+  }
+  .work-card h3 em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .work-card .wc-co {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: -6px;
+  }
+
+  .work-card ul {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .work-card ul li {
+    font-size: 14.5px;
+    color: var(--muted);
+    line-height: 1.55;
+    padding-left: 18px;
+    position: relative;
+    text-wrap: pretty;
+  }
+  .work-card ul li::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0.65em;
+    width: 10px; height: 1px;
+    background: var(--accent);
+  }
+
+  .wc-tag {
+    align-self: flex-start;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--fg);
+    background: color-mix(in oklch, var(--accent) 14%, transparent);
+    border: 1px solid color-mix(in oklch, var(--accent) 30%, var(--hairline));
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-top: 4px;
+  }
+
+  /* ─── Numbers ────────────────────────────────────────────────────────── */
+  .numbers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--hairline);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  @media (max-width: 820px) { .numbers { grid-template-columns: 1fr; } }
+
+  .numbers .num {
+    background: var(--bg);
+    padding: 48px 32px 36px;
+    position: relative;
+    min-height: 200px;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+  }
+  .numbers .num-idx {
+    position: absolute;
+    top: 18px; right: 22px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: color-mix(in oklch, var(--muted) 60%, transparent);
+  }
+  .numbers .num-big {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: clamp(40px, 5vw, 68px);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    color: var(--fg);
+  }
+  .numbers .num-big .unit {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .numbers .num-lbl {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .numbers .num-note {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.4;
+    max-width: 28ch;
+  }
+
+  /* ─── Skills ───────────────────────────────────────────────────────────── */
+  .skills {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--hairline);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  @media (max-width: 980px) { .skills { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .skills { grid-template-columns: 1fr; } }
+
+  .skills .col {
+    background: var(--bg);
+    padding: 28px 24px;
+    display: flex; flex-direction: column; gap: 14px;
+    min-height: 220px;
+  }
+  .skills .col h4 {
+    margin: 0 0 8px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .skills .col ul {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .skills .col li {
+    font-size: 14.5px;
+    color: var(--fg);
+    letter-spacing: -0.005em;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .skills .col li::before {
+    content: "·";
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Brand chip strip — between section title and grid */
+  .brand-strip {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 32px;
+  }
+  .brand-strip .chip {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--hairline);
+    padding: 7px 12px;
+    border-radius: 999px;
+  }
+  .brand-strip .chip.lead {
+    color: var(--accent);
+    border-color: color-mix(in oklch, var(--accent) 35%, var(--hairline));
+  }
+
+  /* ─── Footer / contact strip ─────────────────────────────────────────── */
+  .foot {
+    position: relative; z-index: 3;
+    background: var(--bg);
+    padding: clamp(80px, 12vh, 140px) var(--pad-x) 48px;
+    border-top: 1px solid var(--hairline);
+  }
+  .foot-title {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: clamp(48px, 8vw, 120px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin: 0 0 48px;
+    text-wrap: balance;
+  }
+  .foot-title em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: end;
+  }
+  @media (max-width: 720px) { .foot-grid { grid-template-columns: 1fr; } }
+
+  .foot-grid .email a {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(26px, 3vw, 40px);
+    color: var(--fg);
+    border-bottom: 1px solid var(--hairline);
+    padding-bottom: 4px;
+    transition: color .25s, border-color .25s;
+    word-break: break-all;
+  }
+  .foot-grid .email a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .foot-links {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .foot-links a { transition: color .2s; }
+  .foot-links a:hover { color: var(--accent); }
+
+  .contact-rows {
+    margin-top: 56px;
+    border-top: 1px solid var(--hairline);
+  }
+  .contact-rows .row {
+    display: grid;
+    grid-template-columns: 160px 1fr auto;
+    gap: 24px;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--hairline);
+    transition: padding .25s, color .25s;
+  }
+  .contact-rows .row:hover { padding-left: 12px; padding-right: 12px; }
+  .contact-rows .row:hover .row-arr { color: var(--accent); transform: translateX(6px); }
+  .contact-rows .row .lbl {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .contact-rows .row .val {
+    font-size: 16px;
+    color: var(--fg);
+    letter-spacing: -0.005em;
+  }
+  .contact-rows .row .row-arr {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 16px;
+    transition: color .25s, transform .25s;
+  }
+  @media (max-width: 720px) {
+    .contact-rows .row { grid-template-columns: 1fr auto; }
+    .contact-rows .row .lbl { grid-column: 1 / -1; padding-bottom: 4px; }
+  }
+
+  .foot-fine {
+    margin-top: 64px;
+    display: flex; justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+  @media (max-width: 560px) {
+    .foot-fine { flex-direction: column; gap: 8px; }
+  }
+
+  /* ─── Light-theme adjustments ─────────────────────────────────────────── */
+  html[data-light-theme="1"] .nav { mix-blend-mode: normal; }
+  html[data-light-theme="1"] .nav .mark,
+  html[data-light-theme="1"] .nav-links { color: var(--fg); }
+  html[data-light-theme="1"] .nav-links .cta { border-color: var(--hairline); }
+</style>
+
+<!-- React + Babel + three.js -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+</head>
+<body>
+
+<canvas id="webgl"></canvas>
+
+<!-- Top nav -->
+<nav class="nav" data-no-ripple>
+  <a href="#" class="mark">VS<span class="slash">/</span>Portfolio</a>
+  <div class="nav-links">
+    <a href="#work">Work</a>
+    <a href="#numbers">Numbers</a>
+    <a href="#skills">Skills</a>
+    <a href="#contact" class="cta">Get in touch ↗</a>
+  </div>
+</nav>
+
+<!-- ─── HERO ─────────────────────────────────────────────────────────────── -->
+<header class="hero" id="hero" data-screen-label="01 Hero">
+  <p class="hero-tag">
+    Performance Marketing · Mumbai
+    <span class="pulse" aria-hidden="true"></span>
+    <span style="color:var(--accent)">Open to roles &amp; freelance</span>
+  </p>
+
+  <div class="hero-top">
+    <h1>
+      Vaibhav<br>
+      <span class="ital">Sahu.</span>
+    </h1>
+  </div>
+
+  <div class="hero-bottom">
+    <p class="hero-body">
+      Associate Manager with <span class="accent">₹200Cr+</span> in total budgets managed across BFSI, lifestyle, and global brands. Full-funnel thinker. ROI obsessive.
+    </p>
+
+    <div class="hero-stats">
+      <div>
+        <div class="stat-val">₹200<span class="unit">Cr+</span></div>
+        <div class="stat-key">Budget managed</div>
+      </div>
+      <div>
+        <div class="stat-val">2<span class="unit">×</span></div>
+        <div class="stat-key">ROAS achieved</div>
+      </div>
+      <div>
+        <div class="stat-val">4<span class="unit">+</span></div>
+        <div class="stat-key">Years active</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <svg width="14" height="22" viewBox="0 0 14 22" fill="none"><rect x="0.5" y="0.5" width="13" height="21" rx="6.5" stroke="currentColor" opacity="0.5"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>
+  </div>
+</header>
+
+<!-- ─── ABOUT ─────────────────────────────────────────────────────────────── -->
+<section class="page" id="about" data-screen-label="02 About">
+  <div class="container">
+    <div class="eyebrow">[ 01 ] &nbsp; About</div>
+    <h2 class="section-title">Four years <span class="ital">inside ad accounts.</span></h2>
+
+    <div class="about-grid">
+      <aside class="about-side">
+        <div class="row"><span>Role</span><span>Associate Manager · iProspect</span></div>
+        <div class="row"><span>Based</span><span>Mumbai, India</span></div>
+        <div class="row"><span>Working</span><span>2020 — present</span></div>
+        <div class="row"><span>Spend</span><span>₹200Cr+ lifetime managed</span></div>
+        <div class="row"><span>Industries</span><span>BFSI · Lifestyle · D2C · Quick-commerce</span></div>
+        <div class="row"><span>Channels</span><span>Google · Meta · Snap · Pinterest · Reddit</span></div>
+        <div class="row"><span>Languages</span><span>English · Hindi</span></div>
+      </aside>
+
+      <div class="about-body">
+        <p class="lead">My job is to make the next rupee of spend pay back faster than the last.</p>
+        <p>I plan and run full-funnel paid campaigns across BFSI, lifestyle, D2C and global brands — TOFU to BOFU, B2B and B2C, on annual and quarterly roadmaps. Currently leading performance for Tata AIA Life Insurance at iProspect Mumbai, managing ₹2Cr+ in monthly spend across Term, ULIPs, Savings and Retirement.</p>
+        <p>Past lives at IPG Media Brands on Levi's U.S. social (Snap, Pinterest, Reddit, Meta — ~$4.5M/quarter) and at Ethinos on Zepto, Bajaj Chetak, Naukri.com and Thin Kitchen, where I delivered 2× ROAS across a ₹50Cr+ book. I live in dashboards — AppsFlyer, GA4, Power BI, Asana, Ads Manager — and treat creative performance reports like the most important deliverable of the week.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WORK ─────────────────────────────────────────────────────────────── -->
+<section class="page" id="work" data-screen-label="03 Work">
+  <div class="container">
+    <div class="eyebrow">[ 02 ] &nbsp; Work</div>
+    <h2 class="section-title">Three roles, <span class="ital">one trajectory.</span></h2>
+
+    <div class="brand-strip">
+      <span class="chip lead">Brands worked on</span>
+      <span class="chip">Tata AIA</span>
+      <span class="chip">Levi's U.S.</span>
+      <span class="chip">Zepto</span>
+      <span class="chip">Bajaj Chetak</span>
+      <span class="chip">Naukri.com</span>
+      <span class="chip">Thin Kitchen</span>
+    </div>
+
+    <div class="work-cards">
+
+      <article class="work-card">
+        <div class="wc-head">
+          <span class="wc-current now">Current · iProspect</span>
+          <span class="wc-date">Dec 2024 — Present</span>
+        </div>
+        <h3>Associate Manager <em>— Tata AIA Life Insurance</em></h3>
+        <div class="wc-co">iProspect · Mumbai</div>
+        <ul>
+          <li>Managing <strong>₹2Cr+ monthly ad spend</strong> for Tata AIA Life Insurance across Term, ULIPs, Savings and Retirement.</li>
+          <li>End-to-end media planning across TOFU, BOFU, B2B and B2C with annual and quarterly roadmaps.</li>
+          <li>Delivering performance reports with actionable insights that continuously move the ROI needle.</li>
+        </ul>
+        <span class="wc-tag">₹2Cr+ / month</span>
+      </article>
+
+      <article class="work-card">
+        <div class="wc-head">
+          <span class="wc-current">IPG Media Brands</span>
+          <span class="wc-date">Apr 2024 — Dec 2024</span>
+        </div>
+        <h3>Executive <em>— Search &amp; Social</em></h3>
+        <div class="wc-co">IPG Media Brands · Pune</div>
+        <ul>
+          <li>Managed <strong>Levi's U.S. social</strong> — Snapchat, Pinterest, Reddit, Meta — on a ~$4.5M quarterly budget.</li>
+          <li>Full-funnel strategy from awareness to conversion; presented insights directly to client stakeholders.</li>
+          <li>Led team workflows via Asana; built data-driven forecasts and targeting recommendations.</li>
+        </ul>
+        <span class="wc-tag">$4.5M / quarter</span>
+      </article>
+
+      <article class="work-card">
+        <div class="wc-head">
+          <span class="wc-current">Ethinos Digital Marketing</span>
+          <span class="wc-date">Dec 2022 — Apr 2024</span>
+        </div>
+        <h3>Senior Paid Media Executive <em>— Zepto · Bajaj · Naukri</em></h3>
+        <div class="wc-co">Ethinos Digital Marketing · Navi Mumbai</div>
+        <ul>
+          <li>Managed <strong>₹50Cr+</strong> across Google Ads, Meta and Bing for Zepto, Bajaj Chetak, Naukri.com and Thin Kitchen.</li>
+          <li>Achieved 2× ROAS, +5% app installs, +12% repeat orders while reducing CAC.</li>
+          <li>Leveraged AppsFlyer, GA4 and Ads Manager for deep user-behaviour analytics.</li>
+          <li>Developed creative performance reports driving continuous data-backed optimisation cycles.</li>
+        </ul>
+        <span class="wc-tag">₹50Cr+ total · 2× ROAS</span>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── NUMBERS ──────────────────────────────────────────────────────────── -->
+<section class="page" id="numbers" data-screen-label="04 Numbers">
+  <div class="container">
+    <div class="eyebrow">[ 03 ] &nbsp; Numbers</div>
+    <h2 class="section-title">What it <span class="ital">adds up to.</span></h2>
+
+    <div class="numbers">
+      <div class="num">
+        <span class="num-idx">01</span>
+        <div class="num-big">₹200<span class="unit">Cr+</span></div>
+        <div>
+          <div class="num-lbl">Overall budget managed</div>
+          <p class="num-note">Across BFSI, lifestyle, quick-commerce and global apparel.</p>
+        </div>
+      </div>
+      <div class="num">
+        <span class="num-idx">02</span>
+        <div class="num-big">2<span class="unit">×</span></div>
+        <div>
+          <div class="num-lbl">Blended ROAS achieved</div>
+          <p class="num-note">Sustained at Ethinos across a ₹50Cr+ portfolio of D2C and commerce clients.</p>
+        </div>
+      </div>
+      <div class="num">
+        <span class="num-idx">03</span>
+        <div class="num-big">+12<span class="unit">%</span></div>
+        <div>
+          <div class="num-lbl">Repeat orders, lower CAC</div>
+          <p class="num-note">Plus +5% app installs — driven by lifecycle &amp; creative cadence.</p>
+        </div>
+      </div>
+      <div class="num">
+        <span class="num-idx">04</span>
+        <div class="num-big">$4.5<span class="unit">M</span></div>
+        <div>
+          <div class="num-lbl">Quarterly · Levi's U.S.</div>
+          <p class="num-note">Snap, Pinterest, Reddit and Meta — full-funnel social planning.</p>
+        </div>
+      </div>
+      <div class="num">
+        <span class="num-idx">05</span>
+        <div class="num-big">₹2<span class="unit">Cr+</span></div>
+        <div>
+          <div class="num-lbl">Monthly · Tata AIA</div>
+          <p class="num-note">Term, ULIPs, Savings and Retirement — TOFU to BOFU.</p>
+        </div>
+      </div>
+      <div class="num">
+        <span class="num-idx">06</span>
+        <div class="num-big">4<span class="unit">+</span></div>
+        <div>
+          <div class="num-lbl">Years in performance</div>
+          <p class="num-note">Three agencies, four industries, and a lot of dashboards.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SKILLS / STACK ───────────────────────────────────────────────────── -->
+<section class="page" id="skills" data-screen-label="05 Skills">
+  <div class="container">
+    <div class="eyebrow">[ 04 ] &nbsp; Stack</div>
+    <h2 class="section-title">What I <span class="ital">work with.</span></h2>
+
+    <div class="skills">
+      <div class="col">
+        <h4>Channels</h4>
+        <ul>
+          <li>Google Ads</li>
+          <li>Meta Ads</li>
+          <li>Instagram</li>
+          <li>Snapchat Ads</li>
+          <li>Pinterest Ads</li>
+          <li>Reddit Ads</li>
+          <li>Bing Ads</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Measurement</h4>
+        <ul>
+          <li>GA4</li>
+          <li>AppsFlyer</li>
+          <li>Ads Manager</li>
+          <li>Server-side GTM</li>
+          <li>UTM &amp; tagging plans</li>
+          <li>Attribution modelling</li>
+          <li>Creative performance reports</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Data &amp; tooling</h4>
+        <ul>
+          <li>Power BI</li>
+          <li>SQL</li>
+          <li>Excel · Google Sheets</li>
+          <li>Asana</li>
+          <li>Looker Studio</li>
+          <li>PowerPoint · Keynote</li>
+          <li>Notion</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Discipline</h4>
+        <ul>
+          <li>Media planning · TOFU → BOFU</li>
+          <li>Full-funnel strategy</li>
+          <li>BFSI campaign craft</li>
+          <li>ROI &amp; ROAS optimisation</li>
+          <li>Forecasting &amp; budgeting</li>
+          <li>Targeting recommendations</li>
+          <li>Stakeholder presentations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER / CONTACT ─────────────────────────────────────────────────── -->
+<footer class="foot" id="contact" data-screen-label="06 Contact">
+  <div class="container">
+    <h2 class="foot-title">Have a paid problem <em>worth solving?</em></h2>
+
+    <div class="foot-grid">
+      <div class="email">
+        <a href="/cdn-cgi/l/email-protection#ecbf8d84999adfdbd9ac8b818d8580c28f8381"><span class="__cf_email__" data-cfemail="9ecdfff6ebe8ada9abdef9f3fff7f2b0fdf1f3">[email&#160;protected]</span>&nbsp;↗</a>
+      </div>
+      <div class="foot-links">
+        <a href="tel:+919630162022">+91 96301 62022</a>
+        <a href="#">LinkedIn</a>
+        <a href="#">Read.cv</a>
+      </div>
+    </div>
+
+    <div class="contact-rows">
+      <a class="row" href="tel:+919630162022">
+        <span class="lbl">Phone</span>
+        <span class="val">+91 9630162022</span>
+        <span class="row-arr">→</span>
+      </a>
+      <a class="row" href="/cdn-cgi/l/email-protection#3261535a474401050772555f535b5e1c515d5f">
+        <span class="lbl">Email</span>
+        <span class="val"><span class="__cf_email__" data-cfemail="194a78716c6f2a2e2c597e74787075377a7674">[email&#160;protected]</span></span>
+        <span class="row-arr">→</span>
+      </a>
+      <div class="row">
+        <span class="lbl">Location</span>
+        <span class="val">Mumbai, India</span>
+        <span class="row-arr">→</span>
+      </div>
+      <div class="row">
+        <span class="lbl">Currently</span>
+        <span class="val">Associate Manager · iProspect</span>
+        <span class="row-arr">→</span>
+      </div>
+      <div class="row">
+        <span class="lbl">Open to</span>
+        <span class="val">New roles · Freelance · Ambitious paid problems</span>
+        <span class="row-arr">→</span>
+      </div>
+    </div>
+
+    <div class="foot-fine">
+      <span>© 2026 Vaibhav Sahu · Mumbai</span>
+      <span>Performance Marketing · v1.2</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Tweaks panel mount -->
+<div id="tweaks-root"></div>
+
+<!-- Three.js scene -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="scene.js"></script>
+
+<!-- Tweaks (React + Babel) -->
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+
+</body>
+</html>
